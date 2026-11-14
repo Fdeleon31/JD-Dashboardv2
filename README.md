@@ -7,7 +7,7 @@ La página pide una contraseña. Los datos se publican **cifrados** y solo se ab
 navegador de quien tenga la clave. Salen de la contabilidad de la fundación
 (Google Sheet **Contabilidad Fundación Wonder Panamá**).
 
-Publicación: https://fdeleon31.github.io/JD_Dashboard/ (GitHub Pages, carpeta `docs/`).
+Repositorio: `Fdeleon31/JD-Dashboardv2`. Se publica con GitHub Pages desde la carpeta `docs/`.
 
 ## Cómo está organizado
 
@@ -21,7 +21,8 @@ Herramientas:
 
 | Archivo | Para qué sirve |
 |---|---|
-| `actualizar.js` | Un solo comando: importa, cifra y valida. |
+| `actualizar.js` | Un solo comando: descarga, importa, cifra y valida. |
+| `descargar-sheet.js` | Baja la contabilidad desde Google como .xlsx (si está configurado). |
 | `importar-excel.js` | Lee la contabilidad (.xlsx en `privado/`) y genera `privado/resumen-junta.json`. |
 | `leer-xlsx.js` | Lee archivos .xlsx sin instalar paquetes. |
 | `cifrar-junta.js` | Cifra el resumen con la contraseña de la junta. |
@@ -43,18 +44,16 @@ Abre http://localhost:8000. Para detenerlo: `Ctrl + C`.
 
 1. En el Google Sheet, agrega los movimientos nuevos del banco, clasifícalos y revisa que los
    controles estén en cero (Flujo_Caja, Balanza y Resultados) y que no haya nada "Por aclarar".
-2. **Archivo → Descargar → Microsoft Excel (.xlsx)**.
-3. Pon el archivo en `privado/` y borra el anterior (debe haber **un solo** .xlsx ahí).
-4. Ejecuta:
+2. Ejecuta:
 
    ```
    node herramientas/actualizar.js
    ```
 
-   Revisa los controles del Sheet, pide la contraseña de la junta (la misma de siempre) y
-   debe terminar con **TODO CORRECTO**. Si algo no cuadra, se detiene y dice qué corregir.
-5. Revisa el panel con `node herramientas/servidor.js`.
-6. Publica desde la consola:
+   Descarga la contabilidad, revisa los controles, pide la contraseña de la junta (la misma de
+   siempre) y debe terminar con **TODO CORRECTO**. Si algo no cuadra, se detiene y dice qué corregir.
+3. Revisa el panel con `node herramientas/servidor.js`.
+4. Publica desde la consola:
 
    ```
    git status
@@ -64,6 +63,35 @@ Abre http://localhost:8000. Para detenerlo: `Ctrl + C`.
    ```
 
    En `git status` no debe aparecer nada de `privado/`.
+
+**Sin la lectura automática configurada**, antes del paso 2 descarga el Sheet a mano
+(**Archivo → Descargar → Microsoft Excel (.xlsx)**) y déjalo en `privado/`, uno solo.
+
+## Lectura automática del Sheet (se configura una sola vez)
+
+`descargar-sheet.js` usa una **cuenta de servicio** de Google: un "usuario robot" que solo puede
+**leer** el Sheet. Necesita dos archivos en `privado/` (nunca se publican):
+
+| Archivo | Qué es |
+|---|---|
+| `privado/credenciales-google.json` | La llave de la cuenta de servicio, descargada de Google Cloud. |
+| `privado/configuracion.json` | `{ "id_hoja": "..." }`: el identificador del Sheet (lo que va entre `/d/` y `/edit` en su dirección). |
+
+Pasos en https://console.cloud.google.com, con la cuenta de Google dueña del Sheet:
+
+1. Crea un proyecto (por ejemplo, "Panel junta Wonder").
+2. **APIs y servicios → Biblioteca**: busca **Google Drive API** y actívala.
+3. **IAM y administración → Cuentas de servicio → Crear cuenta de servicio**. Ponle un nombre;
+   no hace falta darle ningún rol.
+4. Entra a la cuenta creada → **Claves → Agregar clave → Crear clave nueva → JSON**. Se descarga
+   un archivo: muévelo a `privado/` con el nombre `credenciales-google.json`.
+5. Copia el correo de la cuenta de servicio (termina en `iam.gserviceaccount.com`) y, en el Sheet,
+   **Compartir** con ese correo como **Lector**.
+
+Para probar: `node herramientas/descargar-sheet.js`. Si falta algo, el mensaje dice qué.
+
+Cuidado con la llave: quien la tenga puede leer la contabilidad. No la envíes por correo ni la
+subas a ningún lado. Si se pierde, bórrala en Google Cloud (Claves) y crea otra.
 
 ## Qué le dice el panel a la junta
 
@@ -94,4 +122,5 @@ Los criterios están al inicio de `docs/js/junta.js` y la junta puede cambiarlos
 
 ## Pendiente
 
-- Lectura automática del Google Sheet (hoy la descarga del .xlsx es manual).
+- Opcional, a decidir: actualización programada sin intervención.
+- Carga más rápida de estados de cuenta y de caja chica en el Sheet.

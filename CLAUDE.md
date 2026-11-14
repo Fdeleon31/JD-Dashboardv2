@@ -3,7 +3,8 @@
 ## Qué es
 Una página privada donde la junta directiva de Fundación Wonder Panamá ve la **liquidez** de la
 fundación: cuánto dinero hay disponible, para cuántos meses alcanza y cómo cambió por trimestre.
-Se publica en GitHub Pages (repo `JD_Dashboard`, carpeta `docs/`).
+Repositorio: `Fdeleon31/JD-Dashboardv2` (el anterior, `JD_Dashboard`, queda como histórico).
+Se publica en GitHub Pages desde la carpeta `docs/`.
 
 El objetivo es que la junta entienda las cifras **sin depender de la Dirección de Finanzas**:
 el panel saca sus propias conclusiones a partir de los datos y las explica en lenguaje sencillo.
@@ -23,8 +24,11 @@ privado/        Contabilidad original (.xlsx) y resumen sin cifrar. NUNCA se pub
 ```
 
 ## Flujo de datos
-Google Sheet de contabilidad → descarga .xlsx en `privado/` → `node herramientas/actualizar.js`
-(importar → cifrar → validar) → `git push`. Detalle paso a paso en README.md.
+Google Sheet de contabilidad → `node herramientas/actualizar.js`
+(descargar → importar → cifrar → validar) → `git push`. Detalle paso a paso en README.md.
+
+- `descargar-sheet.js` baja el Sheet como .xlsx a `privado/contabilidad.xlsx` con una cuenta de
+  servicio de Google de solo lectura. Si no hay credenciales, se usa el .xlsx descargado a mano.
 
 - `importar-excel.js` revisa seis controles del Sheet (deben estar en cero) y genera
   `privado/resumen-junta.json`.
@@ -45,6 +49,7 @@ Google Sheet de contabilidad → descarga .xlsx en `privado/` → `node herramie
   La página tiene una política de seguridad (CSP) que bloquea todo lo que no sea del propio sitio.
 - **Sin paquetes de npm.** Solo Node.js, para que cualquiera pueda correrlo.
 - **La contraseña nunca se escribe en un archivo ni en un comando.**
+- **La llave de Google (`privado/credenciales-google.json`) nunca sale de `privado/`.**
 
 ## Cómo trabajar en este proyecto
 - Código simple y comentado en español: estoy aprendiendo.
@@ -59,6 +64,5 @@ Están al inicio de `docs/js/junta.js`: meta de reserva (3 meses de salidas), m�
 (1 mes) y días de gracia para avisar que faltan datos (45). Cambiarlos ahí cambia todo el panel.
 
 ## Pendiente
-- Lectura automática del Google Sheet con una cuenta de servicio de solo lectura
-  (reemplaza la descarga manual del .xlsx).
 - Opcional, a decidir: actualización programada sin intervención.
+- Carga más rápida de estados de cuenta (carpeta de Drive + reglas) y de caja chica (formulario).

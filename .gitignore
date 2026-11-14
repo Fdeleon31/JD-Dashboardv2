@@ -12,3 +12,6 @@ Thumbs.db
 
 # Configuración local de Claude Code en esta computadora
 .claude/settings.local.json
+
+# Llaves y credenciales: nunca se publican, estén donde estén
+credenciales*.json
